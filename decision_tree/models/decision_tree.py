@@ -20,6 +20,9 @@ class DecisionTree:
         self.max_depth = max_depth
         self.root = None
         
+        # initialized by regression and classification tree
+        self._get_leaf_value = None
+        
     def fit(self, X, y):
         self.root = self._build_tree(X, y)
     
@@ -29,7 +32,7 @@ class DecisionTree:
         
         # check stopping criteria
         if depth >= self.max_depth or n_labels == 1 or n_samples < self.min_samples_split:
-            leaf_value = self._most_common_label(y)
+            leaf_value = self._get_leaf_value(y)
             return Node(value=leaf_value)
         
         # find best split
@@ -42,9 +45,8 @@ class DecisionTree:
         
         return Node(feature=feature, threshold=threshold, left=left, right=right)
     
-    def _most_common_label(self, y):
-        counter = Counter(y)
-        return counter.most_common(1)[0][0]
+    def _information_gain(self, X_column, y, threshold):
+        pass
     
     def _best_split(self, X, y):
         best_gain = -1
@@ -68,30 +70,7 @@ class DecisionTree:
         left_idx = np.argwhere(X_column <= threshold).flatten()
         right_idx = np.argwhere(X_column > threshold).flatten()
         return left_idx, right_idx
-    
-    def _information_gain(self, X_column, y, threshold):
-        # partent entropy
-        # currently unoptimized TODO
-        parent_entropy = self._entropy(y)
-        
-        # left and right child entropy
-        left_idx, right_idx = self._split(X_column, threshold)
-        left_entropy = self._entropy(y[left_idx])
-        right_entropy = self._entropy(y[right_idx])
-        
-        # weighted average
-        children_entropy = (left_entropy * len(left_idx) + right_entropy * len(right_idx)) / len(y)
-        information_gain = parent_entropy - children_entropy
-        return information_gain
-        
-    def _entropy(self, y):
-        entropy = 0
-        
-        for label in np.unique(y):
-            p = y[y == label].shape[0] / y.shape[0]
-            entropy -= p * np.log2(p) if p > 0 else 0
-        
-        return entropy
+
     
     def predict(self, X):
         return np.array([self._traverse_tree(x, self.root) for x in X])
@@ -103,3 +82,56 @@ class DecisionTree:
         if x[node.feature] <= node.threshold:
             return self._traverse_tree(x, node.left)
         return self._traverse_tree(x, node.right)
+    
+    
+class ClassificationTree(DecisionTree):
+    def fit(self, X, y):
+        self._get_leaf_value = self._most_common_label
+        super(ClassificationTree, self).fit(X, y)
+    
+    def _information_gain(self, X_column, y, threshold):
+        # partent entropy
+        parent_entropy = self._entropy(y)
+        
+        # left and right child entropy
+        left_idx, right_idx = self._split(X_column, threshold)
+        left_entropy = self._entropy(y[left_idx])
+        right_entropy = self._entropy(y[right_idx])
+        
+        # weighted average
+        children_entropy = (left_entropy * len(left_idx) + right_entropy * len(right_idx)) / len(y)
+        information_gain = parent_entropy - children_entropy
+        return information_gain
+    
+    def _entropy(self, y):
+        entropy = 0
+        
+        for label in np.unique(y):
+            p = y[y == label].shape[0] / y.shape[0]
+            entropy -= p * np.log2(p) if p > 0 else 0
+        
+        return entropy
+    
+    def _most_common_label(self, y):
+        counter = Counter(y)
+        return counter.most_common(1)[0][0]
+
+
+class RegressionTree(DecisionTree):
+    def fit(self, X, y):
+        self._get_leaf_value = np.mean
+        super(RegressionTree, self).fit(X, y)
+    
+    def _information_gain(self, X_column, y, threshold):
+        # parent mean
+        parent_var = np.var(y)
+        
+        # left and right child mean
+        left_idx, right_idx = self._split(X_column, threshold)
+        left_var = np.var(y[left_idx])
+        right_mean = np.var(y[right_idx])
+        
+        # weighted average
+        children_var = (left_var * len(left_idx) + right_mean * len(right_idx)) / len(y)
+        var_reduction = parent_var - children_var
+        return var_reduction
