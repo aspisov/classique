@@ -39,30 +39,23 @@ def mean_absolute_error(y_true, y_pred):
 def mean_squared_error(y_true, y_pred):
     return np.mean((y_true - y_pred) ** 2)
 
+def root_mean_squared_error(y_true, y_pred):
+    return np.sqrt(mean_squared_error(y_true, y_pred))
+
+def mean_absolute_percentage_error(y_true, y_pred):
+    return np.abs((y_true - y_pred) / y_true).mean()
+
+def symmetric_mean_absolute_percentage_error(y_true, y_pred):
+    return np.mean(2 * np.abs(y_true - y_pred) / (y_true + y_pred))
+
+def root_mean_squared_log_error(y_true, y_pred):
+    return np.sqrt(np.mean((np.log(y_true + 1) - np.log(y_pred + 1)) ** 2))
 
 def r2_score(y_true, y_pred):
     """
     Computes the coefficient of determination.
     """
     return 1 - np.sum((y_true - y_pred) ** 2) / np.sum((y_true - np.mean(y_true)) ** 2)
-
-
-def roc_auc_score(y_true, y_pred):
-    """
-    Computes area under the ROC curve.
-    """
-    indicator = lambda a, b: 0.5 if a == b else a < b
-
-    n = len(y_true)
-    numerator = 0
-    denominator = 0
-
-    for i in range(n):
-        for j in range(n):
-            numerator += (y_true[i] < y_true[j]) * indicator(y_pred[i], y_pred[j])
-            denominator += y_true[i] < y_true[j]
-
-    return numerator / denominator
 
 def roc_curve(y_true, y_scores):
     """
@@ -83,3 +76,10 @@ def roc_curve(y_true, y_scores):
         fpr.append(fp / (fp + tn))
 
     return np.array(fpr), np.array(tpr), thresholds
+
+def roc_auc_score(y_true, y_scores):
+    """
+    Computes the Area Under the Receiver Operating Characteristic (ROC) curve.
+    """
+    fpr, tpr, _ = roc_curve(y_true, y_scores)
+    return np.trapz(tpr, fpr)
