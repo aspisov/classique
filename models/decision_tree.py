@@ -4,6 +4,9 @@ from abc import ABC, abstractmethod
 
 
 class Node:
+    """
+    Decision tree node.
+    """
     def __init__(
         self, feature=None, threshold=None, left=None, right=None, *, value=None
     ):
@@ -18,6 +21,17 @@ class Node:
 
 
 class DecisionTree(ABC):
+    """
+    Abstract base class for decision trees.
+
+    Implements the common functionality for both classification and regression
+    decision trees.
+
+    Attributes:
+        min_samples_split (int): Minimum number of samples required to split an internal node.
+        max_depth (int): Maximum depth of the tree.
+        n_features (int): Number of features to consider when looking for the best split.
+    """
     def __init__(self, min_samples_split=2, max_depth=10, n_features=None):
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
@@ -32,6 +46,7 @@ class DecisionTree(ABC):
         pass
 
     def _build_tree(self, X, y, depth=0):
+        # recursively build decision tree
         n_samples = len(X)
         n_labels = len(np.unique(y))
 
@@ -62,6 +77,7 @@ class DecisionTree(ABC):
         pass
 
     def _best_split(self, X, y):
+        # runs through all features and thresholds and return feature and threshold with highest information gain
         best_gain = -1
         best_feature, best_threshold = None, None
 
@@ -88,6 +104,7 @@ class DecisionTree(ABC):
         return best_feature, best_threshold
 
     def _split(self, X_column, threshold):
+        # splits data based on feature and threshold
         left_idx = np.argwhere(X_column <= threshold).flatten()
         right_idx = np.argwhere(X_column > threshold).flatten()
         return left_idx, right_idx
