@@ -109,7 +109,7 @@ def run_experiment(n_samples, n_features, n_trees, n_jobs):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     start_time = time.time()
-    rf_clf = RandomForestClassifier(n_trees=n_trees, max_depth=10, n_jobs=n_jobs)
+    rf_clf = RandomForestClassifier(n_trees=n_trees, max_depth=15, n_jobs=n_jobs)
     rf_clf.fit(X_train, y_train)
     y_pred = rf_clf.predict(X_test)
     end_time = time.time()
@@ -121,7 +121,7 @@ def run_experiment(n_samples, n_features, n_trees, n_jobs):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     start_time = time.time()
-    rf_reg = RandomForestRegressor(n_trees=n_trees, max_depth=10, n_jobs=n_jobs)
+    rf_reg = RandomForestRegressor(n_trees=n_trees, max_depth=15, n_jobs=n_jobs)
     rf_reg.fit(X_train, y_train)
     y_pred = rf_reg.predict(X_test)
     end_time = time.time()
