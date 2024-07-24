@@ -3,7 +3,6 @@ from decision_tree import ClassificationTree, RegressionTree
 from abc import ABC, abstractmethod
 from tqdm import tqdm
 
-
 class GradientBoosting(ABC):
     """
     Abstract base class for Gradient Boosting algorithms.
@@ -27,56 +26,89 @@ class GradientBoosting(ABC):
         self.F0 = None
 
     def fit(self, X, y):
+        # at first we only have one leaf
         self.F0 = self._initial_prediction(y)
         F = np.full(len(y), self.F0)
         
         for _ in tqdm(range(self.n_estimators)):
-            resudials = self._gradient(y, F)
-            tree = self._create_tree()
-            tree.fit(X, resudials)
+            residuals = self._gradient(y, F)
+            tree = RegressionTree(self.min_samples_split, self.max_depth)
+            # next tree tries to predict residuals
+            tree.fit(X, residuals)
             self.trees.append(tree)
             
             # update predictions
             F += self.learning_rate * tree.predict(X)
         
     @abstractmethod
+    def predict(self, X):
+        pass
+        
+    @abstractmethod
     def _initial_prediction(self, y):
         pass
-
-    def predict(self, X):
-        F = np.full(len(X), self.F0)
-        for tree in self.trees:
-            F += self.learning_rate * tree.predict(X)
-        return F
     
+    @abstractmethod
+    def _gradient(self, y, F):
+        pass
     
 class GradientBoostingRegressor(GradientBoosting):
     def _initial_prediction(self, y):
         return np.mean(y)
     
-    def _create_tree(self):
-        return RegressionTree(self.min_samples_split, self.max_depth)
-    
     def _gradient(self, y, F):
         return y - F
     
+    def predict(self, X):
+        F = np.full(len(X), self.F0)
+        for tree in self.trees:
+            F += self.learning_rate * tree.predict(X)
+        return F
+
 class GradientBoostingClassifier(GradientBoosting):
-    pass # TODO
+    def _initial_prediction(self, y):
+        p = np.mean(y)
+        return np.log(p / (1 - p))  # log-odds
     
+    def _gradient(self, y, F):
+        p = self._sigmoid(F)  # convert to probability
+        return y - p
+    
+    def predict_proba(self, X):
+        F = np.full(len(X), self.F0)
+        for tree in self.trees:
+            F += self.learning_rate * tree.predict(X)
+        return self._sigmoid(F)  # convert to probability
+    
+    def predict(self, X, threshold=0.5):
+        return (self.predict_proba(X) >= threshold).astype(int)
+    
+    def _sigmoid(self, z):
+        return 1 / (1 + np.exp(-z))
     
 if __name__ == "__main__":
-    from sklearn.datasets import make_regression
-    from sklearn.metrics import r2_score, mean_squared_error
+    from sklearn.datasets import make_regression, make_classification
+    from sklearn.metrics import r2_score, mean_squared_error, accuracy_score, roc_auc_score
     from sklearn.model_selection import train_test_split
     
+    # Regression example
     X, y = make_regression(n_samples=1000, n_features=10, noise=0.1, random_state=42)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
     model = GradientBoostingRegressor(n_estimators=50, max_depth=4)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
-    print(f"R2: {r2_score(y_test, y_pred)}")
-    print(f"MSE: {mean_squared_error(y_test, y_pred)}")
+    print(f"Regression - R2: {r2_score(y_test, y_pred)}")
+    print(f"Regression - MSE: {mean_squared_error(y_test, y_pred)}")
     
+    # Classification example
+    X, y = make_classification(n_samples=1000, n_features=10, n_classes=2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
+    model = GradientBoostingClassifier(n_estimators=50, max_depth=3)
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    print(f"Classification - Accuracy: {accuracy_score(y_test, y_pred)}")
+    probs = model.predict_proba(X_test)
+    print(f"Classification - ROC AUC: {roc_auc_score(y_test, probs)}")
     
