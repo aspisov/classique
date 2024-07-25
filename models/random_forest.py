@@ -135,5 +135,5 @@ if __name__ == "__main__":
     from sklearn.metrics import accuracy_score, mean_squared_error, r2_score
 
     # run experiments with different configurations
-    run_experiment(n_samples=1000, n_features=10, n_trees=50, n_jobs=1)
+    # run_experiment(n_samples=1000, n_features=10, n_trees=50, n_jobs=1)
     run_experiment(n_samples=1000, n_features=10, n_trees=50, n_jobs=-1)

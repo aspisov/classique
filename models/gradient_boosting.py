@@ -91,16 +91,6 @@ if __name__ == "__main__":
     from sklearn.metrics import r2_score, mean_squared_error, accuracy_score, roc_auc_score
     from sklearn.model_selection import train_test_split
     
-    # Regression example
-    X, y = make_regression(n_samples=1000, n_features=10, noise=0.1, random_state=42)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    model = GradientBoostingRegressor(n_estimators=50, max_depth=4)
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-    print(f"Regression - R2: {r2_score(y_test, y_pred)}")
-    print(f"Regression - MSE: {mean_squared_error(y_test, y_pred)}")
-    
     # Classification example
     X, y = make_classification(n_samples=1000, n_features=10, n_classes=2, random_state=42)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -111,4 +101,14 @@ if __name__ == "__main__":
     print(f"Classification - Accuracy: {accuracy_score(y_test, y_pred)}")
     probs = model.predict_proba(X_test)
     print(f"Classification - ROC AUC: {roc_auc_score(y_test, probs)}")
+    
+    # Regression example
+    X, y = make_regression(n_samples=1000, n_features=10, noise=0.1, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    model = GradientBoostingRegressor(n_estimators=50, max_depth=4)
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    print(f"Regression - R2: {r2_score(y_test, y_pred)}")
+    print(f"Regression - MSE: {mean_squared_error(y_test, y_pred)}")
     
