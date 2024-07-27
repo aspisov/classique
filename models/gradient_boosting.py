@@ -16,7 +16,7 @@ class GradientBoosting(ABC):
         learning_rate (float): Learning rate shrinks the contribution of each tree by `learning_rate`.
     """
     def __init__(
-        self, n_estimators=100, min_samples_split=2, max_depth=10, learning_rate=0.1
+        self, n_estimators=100, min_samples_split=3, max_depth=10, learning_rate=0.1
     ):
         self.n_estimators = n_estimators
         self.min_samples_split = min_samples_split

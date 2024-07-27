@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from collections import Counter
 from decision_tree import ClassificationTree, RegressionTree
 from abc import ABC, abstractmethod
@@ -19,7 +20,7 @@ class RandomForest(ABC):
         n_features (int): Number of features to consider when looking for the best split.
         n_jobs (int): Number of jobs to run in parallel. -1 means using all processors.
     """
-    def __init__(self, n_trees=10, min_samples_split=2, max_depth=10, n_features=None, n_jobs=-1):
+    def __init__(self, n_trees=10, min_samples_split=3, max_depth=10, n_features=None, n_jobs=-1):
         self.n_trees = n_trees
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
@@ -64,7 +65,7 @@ class RandomForestClassifier(RandomForest):
         return ClassificationTree(
             min_samples_split=self.min_samples_split,
             max_depth=self.max_depth,
-            n_features=self.n_features,
+            n_features=math.ceil(math.sqrt(self.n_features)),
         )
     
     def predict(self, X):
@@ -87,7 +88,7 @@ class RandomForestRegressor(RandomForest):
         return RegressionTree(
                 min_samples_split=self.min_samples_split,
                 max_depth=self.max_depth,
-                n_features=self.n_features,
+                n_features=math.ceil(self.n_features / 3),
             )
 
     def predict(self, X):
@@ -136,4 +137,4 @@ if __name__ == "__main__":
 
     # run experiments with different configurations
     # run_experiment(n_samples=1000, n_features=10, n_trees=50, n_jobs=1)
-    run_experiment(n_samples=1000, n_features=10, n_trees=50, n_jobs=-1)
+    run_experiment(n_samples=1000, n_features=20, n_trees=50, n_jobs=-1)

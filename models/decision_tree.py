@@ -32,7 +32,7 @@ class DecisionTree(ABC):
         max_depth (int): Maximum depth of the tree.
         n_features (int): Number of features to consider when looking for the best split.
     """
-    def __init__(self, min_samples_split=2, max_depth=10, n_features=None):
+    def __init__(self, min_samples_split=3, max_depth=10, n_features=None):
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
         self.n_features = n_features
